@@ -8,15 +8,13 @@ from pipeline.contracts import RetrievedChunk
 from typing import List
 
 
-def run(
-    query: str,
-    retrieved_chunks: List[RetrievedChunk],
-    config: dict
-) -> List[RetrievedChunk]:
+def run(query: str, retrieved_chunks: List[RetrievedChunk], config: dict) -> List[RetrievedChunk]:
     """
     Input:  query + retrieved chunks (top 20 from retriever)
     Output: reranked chunks (top 5, more accurately scored)
     """
+
+    # If reranker section missing from config entirely — skip it. Safe fallback.
     if not config.get("reranker"):
         return retrieved_chunks
 
@@ -35,11 +33,7 @@ def run(
         raise ValueError(f"Unknown reranker strategy: {strategy}")
 
 
-def _cross_encoder_rerank(
-    query: str,
-    chunks: List[RetrievedChunk],
-    top_n: int
-) -> List[RetrievedChunk]:
+def _cross_encoder_rerank(query: str, chunks: List[RetrievedChunk], top_n: int) -> List[RetrievedChunk]:
     """
     Cross encoder scores (query, chunk) pairs jointly.
     More accurate than bi-encoder because it sees both together.
@@ -63,11 +57,7 @@ def _cross_encoder_rerank(
     return reranked[:top_n]
 
 
-def _monot5_rerank(
-    query: str,
-    chunks: List[RetrievedChunk],
-    top_n: int
-) -> List[RetrievedChunk]:
+def _monot5_rerank(query: str, chunks: List[RetrievedChunk], top_n: int) -> List[RetrievedChunk]:
     """
     monoT5 — best reranker per EMNLP 2024 best practices paper.
     Slower than cross encoder but more accurate.
@@ -88,7 +78,7 @@ def _monot5_rerank(
     scored_chunks = []
 
     for retrieved in chunks:
-        # monoT5 input format
+        # Exact format monoT5 was trained on. Must match — changing this format breaks the model.
         input_text = f"Query: {query} Document: {retrieved.chunk.text} Relevant:"
         inputs = tokenizer(
             input_text,

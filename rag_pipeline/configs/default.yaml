@@ -2,9 +2,33 @@ config_name: "baseline_v1"
 
 dataset:
   name: "rungalileo/ragbench"
-  domain: "customer_support"
+  domain: "biomedical"          # high level domain name
   split: "test"
-  sample_size: 10
+  sample_size: 10             # null = load all
+  force_reindex: false
+
+# Domain to subset mapping
+domain_subsets:
+  biomedical:
+    - covidqa
+    - pubmedqa
+  general_knowledge:
+    - hotpotqa
+    - msmarco
+    - hagrid
+    - expertqa
+  legal:
+    - cuad
+  customer_support:
+    - techqa
+    - emanual
+    - delucionqa
+  finance:
+    - finqa
+    - tatqa
+
+query_classifier:
+  strategy: "always"    # always | keyword
 
 chunker:
   strategy: "sentence"    # token | sentence | semantic | sliding
@@ -12,7 +36,7 @@ chunker:
   chunk_overlap: 50
 
 embedder:
-  model: "BAAI/bge-base-en-v1.5"
+  model: "all-mpnet-base-v2"
 
 indexer:
   persist_path: "./data/chroma_db"
@@ -21,9 +45,23 @@ indexer:
 
 retriever:
   strategy: "dense"       # dense | bm25 | hybrid
-  top_k: 5
+  top_k: 20
   bm25_weight: 0.5
   dense_weight: 0.5
+
+reranker:
+  strategy: "cross_encoder"   # cross_encoder | monot5 | none
+  top_n: 5
+
+repacker:
+  strategy: "reverse"    # forward | reverse | sides | none
+
+# none → just concatenate all chunks as-is. Fine for short chunks.
+# extractive → splits each chunk into sentences, embeds them, scores against query, keeps only the most relevant ones. 
+# Reduces noise before LLM sees the context.
+summarizer:
+  strategy: "none"        # none | extractive
+  max_sentences: 5
 
 generator:
   model: "llama3.2"

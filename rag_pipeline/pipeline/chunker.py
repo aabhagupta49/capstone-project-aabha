@@ -1,5 +1,5 @@
 # pipeline/chunker.py
-from chonkie import TokenChunker, SentenceChunker, SemanticChunker, SlidingWindowChunker
+from chonkie import TokenChunker, SentenceChunker, SemanticChunker
 from pipeline.contracts import Chunk
 
 def run(documents, config):
@@ -18,8 +18,8 @@ def run(documents, config):
         chunker = SentenceChunker(chunk_size=chunk_size, chunk_overlap=overlap)
     elif strategy == "semantic":
         chunker = SemanticChunker(chunk_size=chunk_size)
-    elif strategy == "sliding":
-        chunker = SlidingWindowChunker(chunk_size=chunk_size, chunk_overlap=overlap)
+    # elif strategy == "sliding":
+    #     chunker = SlidingWindowChunker(chunk_size=chunk_size, chunk_overlap=overlap)
     else:
         raise ValueError(f"Unknown chunking strategy: {strategy}")
 
