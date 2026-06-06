@@ -1,0 +1,39 @@
+config_name: "baseline_v1"
+
+dataset:
+  name: "rungalileo/ragbench"
+  domain: "customer_support"
+  split: "test"
+  sample_size: 10
+
+chunker:
+  strategy: "sentence"    # token | sentence | semantic | sliding
+  chunk_size: 512
+  chunk_overlap: 50
+
+embedder:
+  model: "BAAI/bge-base-en-v1.5"
+
+indexer:
+  persist_path: "./data/chroma_db"
+  collection_name: "rag_chunks"
+  use_bm25: true
+
+retriever:
+  strategy: "dense"       # dense | bm25 | hybrid
+  top_k: 5
+  bm25_weight: 0.5
+  dense_weight: 0.5
+
+generator:
+  model: "llama3.2"
+  base_url: "http://localhost:11434"
+  temperature: 0.1
+  max_tokens: 512
+
+evaluator:
+  metrics:
+    - context_relevance
+    - adherence
+    - completeness
+    - context_utilization
